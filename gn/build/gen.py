@@ -89,8 +89,8 @@ def main(argv):
                     help='Enable the use of Identical Code Folding')
   parser.add_option('--no-sysroot', action='store_true',
                     help='(Linux only) Do not build with the Debian sysroot.')
-  parser.add_option('--is-x86win', action='store_true',
-                    help='(Windows MSVC only) X86 build mode, otherwise use x64 mode.')
+  parser.add_option('--is-x64win', action='store_true',
+                    help='(Windows MSVC only) x64 build mode, otherwise use x86 mode.')
   parser.add_option('--no-last-commit-position', action='store_true',
                     help='Do not generate last_commit_position.h.')
   parser.add_option('--out-path',
@@ -107,7 +107,7 @@ def main(argv):
     host = platform
 
   linux_sysroot = None
-  is_32bitwinbuild = options.is_x86win
+  is_32bitwinbuild = options.is_x64win
   
   if platform.is_linux() and not options.no_sysroot:
     linux_sysroot = UpdateLinuxSysroot()
