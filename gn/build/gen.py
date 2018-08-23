@@ -19,8 +19,7 @@ import urllib2
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
-GN_ROOT = os.path.join(REPO_ROOT, 'tools', 'gn')
-is_32bitwinbuild = True
+GN_ROOT = os.path.join(REPO_ROOT, 'tools', 'gn') 
 
 class Platform(object):
   """Represents a host/target platform."""
@@ -106,8 +105,7 @@ def main(argv):
   else:
     host = platform
 
-  linux_sysroot = None
-  is_32bitwinbuild = options.is_x64win
+  linux_sysroot = None 
   
   if platform.is_linux() and not options.no_sysroot:
     linux_sysroot = UpdateLinuxSysroot()
@@ -119,17 +117,15 @@ def main(argv):
     GenerateLastCommitPosition(host,
                                os.path.join(out_dir, 'last_commit_position.h'))
   WriteGNNinja(os.path.join(out_dir, 'build.ninja'), platform, host, options,
-               linux_sysroot)
+               linux_sysroot,options.is_x64win==1)
   return 0
 
 
-def GenerateLastCommitPosition(host, header):
-  ROOT_TAG = 'initial-commit'
+def GenerateLastCommitPosition(host, header): 
   describe_output = subprocess.check_output(
-      ['git', 'describe', 'HEAD', '--match', ROOT_TAG], shell=host.is_windows(),
-      cwd=REPO_ROOT)
-  mo = re.match(ROOT_TAG + '-(\d+)-g([0-9a-f]+)', describe_output)
-  if not mo:
+      ['git', 'describe', '--always'], shell=host.is_windows(),
+      cwd=REPO_ROOT) 
+  if not describe_output:
     raise ValueError(
         'Unexpected output from git describe when generating version header')
 
@@ -138,10 +134,10 @@ def GenerateLastCommitPosition(host, header):
 #ifndef OUT_LAST_COMMIT_POSITION_H_
 #define OUT_LAST_COMMIT_POSITION_H_
 
-#define LAST_COMMIT_POSITION "%s (%s)"
+#define LAST_COMMIT_POSITION "%s "
 
 #endif  // OUT_LAST_COMMIT_POSITION_H_
-''' % (mo.group(1), mo.group(2))
+''' % (describe_output)
 
   # Only write/touch this file if the commit position has changed.
   old_contents = ''
@@ -302,7 +298,7 @@ def WriteGenericNinja(path, static_libraries, executables,
             os.path.relpath(template_filename, os.path.dirname(path)) + '\n')
 
 
-def WriteGNNinja(path, platform, host, options, linux_sysroot):
+def WriteGNNinja(path, platform, host, options, linux_sysroot,is_x64win):
   if platform.is_msvc():
     cc = os.environ.get('CC', 'cl.exe')
     cxx = os.environ.get('CXX', 'cl.exe')
@@ -423,11 +419,11 @@ def WriteGNNinja(path, platform, host, options, linux_sysroot):
     cflags_cc.extend([
         '/GR-',
         '/D_HAS_EXCEPTIONS=0',
-    ])
-    if is_32bitwinbuild:
-        ldflags.extend([ '/MACHINE:x86'])
-    else:
-        ldflags.extend([ '/MACHINE:x64'])
+    ]) 
+    if is_x64win==0:
+        ldflags.extend([ '/MACHINE:X86']) 
+    else: 
+        ldflags.extend([ '/MACHINE:X64'])
     
   static_libraries = {
       'base': {'sources': [
